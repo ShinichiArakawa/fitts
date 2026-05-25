@@ -188,8 +188,21 @@ h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
 .stat-value { font-size: 24px; font-weight: 700; }
 .stat-value-sm { font-size: 18px; font-weight: 600; }
 
+.save-status {
+  text-align: center;
+  font-size: 13px;
+  margin-bottom: 20px;
+  min-height: 20px;
+}
+
+.save-status.saving { color: var(--text-dim); }
+.save-status.success { color: var(--success); }
+.save-status.error { color: var(--error); }
+.save-status.warn { color: #fcc419; }
+
 .results-actions {
   display: flex;
   gap: 12px;
   justify-content: center;
+  flex-wrap: wrap;
 }

@@ -2,7 +2,6 @@
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => document.querySelectorAll(s);
 
-  const CIRCLE_RADIUS = 12.5;
   const CIRCLE_DISTANCE = 500;
 
   function showScreen(id) {
@@ -27,16 +26,17 @@
 
   // --- Experiment state ---
   let studentId = '';
+  let circleRadius = 12.5;
+  let circleDiameter = 25;
   let targetClicks = 20;
   let clickCount = 0;
   let missCount = 0;
-  let activeTarget = 0; // 0 = left, 1 = right
+  let activeTarget = 0;
   let startTime = 0;
   let started = false;
 
   const canvas = $('#canvas');
   const ctx = canvas.getContext('2d');
-
   let circleL = null;
   let circleR = null;
 
@@ -56,7 +56,7 @@
 
   function drawCircle(x, y, isActive) {
     ctx.beginPath();
-    ctx.arc(x, y, CIRCLE_RADIUS, 0, Math.PI * 2);
+    ctx.arc(x, y, circleRadius, 0, Math.PI * 2);
     ctx.fillStyle = isActive ? '#ff6b6b' : '#3a3f52';
     ctx.fill();
     ctx.strokeStyle = isActive ? '#ff8787' : '#4a5068';
@@ -65,12 +65,8 @@
   }
 
   function render() {
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
-    ctx.clearRect(0, 0, w, h);
-
+    ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
     if (!circleL || !circleR) return;
-
     drawCircle(circleL.x, circleL.y, activeTarget === 0);
     drawCircle(circleR.x, circleR.y, activeTarget === 1);
   }
@@ -83,7 +79,7 @@
   function isInsideCircle(mx, my, circle) {
     const dx = mx - circle.x;
     const dy = my - circle.y;
-    return dx * dx + dy * dy <= CIRCLE_RADIUS * CIRCLE_RADIUS;
+    return dx * dx + dy * dy <= circleRadius * circleRadius;
   }
 
   canvas.addEventListener('click', e => {
@@ -92,7 +88,6 @@
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
-
     const target = activeTarget === 0 ? circleL : circleR;
 
     if (isInsideCircle(mx, my, target)) {
@@ -130,6 +125,8 @@
       $('#input-id').style.borderColor = '#ff6b6b';
       return;
     }
+    circleDiameter = getSelectedValue('size') || 25;
+    circleRadius = circleDiameter / 2;
     targetClicks = getSelectedValue('clicks') || 20;
     clickCount = 0;
     missCount = 0;
@@ -148,17 +145,71 @@
   });
 
   // --- Results ---
+  let lastElapsed = 0;
+
   function showResults(elapsedMs) {
-    showScreen('results');
+    lastElapsed = elapsedMs;
     const sec = (elapsedMs / 1000).toFixed(2);
+    showScreen('results');
     $('#stat-student-id').textContent = studentId;
+    $('#stat-size').textContent = `${circleDiameter}px`;
     $('#stat-miss').textContent = missCount;
     $('#stat-time').textContent = `${sec} 秒`;
+
+    saveToSheet(sec);
   }
 
+  // --- Save to Google Sheets ---
+  function saveToSheet(sec) {
+    const status = $('#save-status');
+    if (!CONFIG.GAS_URL) {
+      status.textContent = '※ スプレッドシート未設定';
+      status.className = 'save-status warn';
+      return;
+    }
+
+    status.textContent = '保存中...';
+    status.className = 'save-status saving';
+
+    const data = {
+      studentId,
+      size: circleDiameter,
+      clicks: targetClicks,
+      miss: missCount,
+      time: sec,
+      timestamp: new Date().toISOString(),
+    };
+
+    fetch(CONFIG.GAS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+      .then(() => {
+        status.textContent = '保存しました';
+        status.className = 'save-status success';
+      })
+      .catch(() => {
+        status.textContent = '保存に失敗しました';
+        status.className = 'save-status error';
+      });
+  }
+
+  // --- Sheet link ---
+  $('#btn-sheet').addEventListener('click', () => {
+    if (CONFIG.SHEET_URL) {
+      window.open(CONFIG.SHEET_URL, '_blank');
+    } else {
+      alert('スプレッドシートURLが設定されていません');
+    }
+  });
+
+  // --- CSV ---
   $('#btn-csv').addEventListener('click', () => {
-    const sec = $('#stat-time').textContent.replace(' 秒', '');
-    const csv = '学籍番号,ミス回数,所要時間(秒)\n' + `${studentId},${missCount},${sec}`;
+    const sec = (lastElapsed / 1000).toFixed(2);
+    const csv = '学籍番号,サイズ(px),クリック回数,ミス回数,所要時間(秒)\n'
+      + `${studentId},${circleDiameter},${targetClicks},${missCount},${sec}`;
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -168,6 +219,7 @@
     URL.revokeObjectURL(url);
   });
 
+  // --- Retry ---
   $('#btn-retry').addEventListener('click', () => {
     showScreen('top');
   });

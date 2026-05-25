@@ -19,6 +19,16 @@
       </div>
 
       <div class="form-group">
+        <label>ターゲットサイズ</label>
+        <div class="chip-group single" data-param="size">
+          <button class="chip selected" data-value="25">最大 (25px)</button>
+          <button class="chip" data-value="20">大 (20px)</button>
+          <button class="chip" data-value="15">中 (15px)</button>
+          <button class="chip" data-value="10">小 (10px)</button>
+        </div>
+      </div>
+
+      <div class="form-group">
         <label>クリック回数</label>
         <div class="chip-group single" data-param="clicks">
           <button class="chip" data-value="10">10</button>
@@ -41,7 +51,6 @@
       <span id="hud-miss">ミス: 0</span>
     </div>
     <canvas id="canvas"></canvas>
-    <div id="experiment-msg" class="experiment-msg"></div>
   </div>
 
   <!-- 結果画面 -->
@@ -55,6 +64,10 @@
           <div class="stat-value stat-value-sm" id="stat-student-id">—</div>
         </div>
         <div class="stat-card">
+          <div class="stat-label">ターゲットサイズ</div>
+          <div class="stat-value" id="stat-size">—</div>
+        </div>
+        <div class="stat-card">
           <div class="stat-label">ミス回数</div>
           <div class="stat-value" id="stat-miss">—</div>
         </div>
@@ -64,13 +77,17 @@
         </div>
       </div>
 
+      <div id="save-status" class="save-status"></div>
+
       <div class="results-actions">
+        <button id="btn-sheet" class="btn-secondary">スプレッドシートを開く</button>
         <button id="btn-csv" class="btn-secondary">CSVダウンロード</button>
         <button id="btn-retry" class="btn-primary">もう一度</button>
       </div>
     </div>
   </div>
 
+  <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
