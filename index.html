@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fitts' Law Task</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 設定画面 -->
+  <div id="screen-setup" class="screen active">
+    <div class="setup-container">
+      <h1>Fitts' Law Task</h1>
+      <p class="subtitle">フィッツの法則を体験する実験課題</p>
+
+      <div class="settings">
+        <div class="setting-group">
+          <label>ターゲット距離 (D) [px]</label>
+          <div class="chip-group" data-param="distances">
+            <button class="chip selected" data-value="100">100</button>
+            <button class="chip selected" data-value="200">200</button>
+            <button class="chip selected" data-value="400">400</button>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <label>ターゲット幅 (W) [px]</label>
+          <div class="chip-group" data-param="widths">
+            <button class="chip selected" data-value="20">20</button>
+            <button class="chip selected" data-value="40">40</button>
+            <button class="chip selected" data-value="80">80</button>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <label>各条件の繰り返し回数</label>
+          <div class="chip-group single" data-param="repeats">
+            <button class="chip" data-value="3">3</button>
+            <button class="chip selected" data-value="5">5</button>
+            <button class="chip" data-value="8">8</button>
+            <button class="chip" data-value="10">10</button>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <label>練習試行数</label>
+          <div class="chip-group single" data-param="practice">
+            <button class="chip" data-value="0">0</button>
+            <button class="chip selected" data-value="3">3</button>
+            <button class="chip" data-value="5">5</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="trial-info">
+        合計試行数: <span id="total-trials">45</span>回（練習 <span id="practice-trials">3</span>回 + 本番 <span id="main-trials">45</span>回）
+      </div>
+
+      <button id="btn-start" class="btn-primary">実験開始</button>
+    </div>
+  </div>
+
+  <!-- 実験画面 -->
+  <div id="screen-experiment" class="screen">
+    <div class="experiment-hud">
+      <span id="hud-phase">練習</span>
+      <span id="hud-progress">0 / 0</span>
+    </div>
+    <canvas id="canvas"></canvas>
+    <div id="experiment-msg" class="experiment-msg"></div>
+  </div>
+
+  <!-- 結果画面 -->
+  <div id="screen-results" class="screen">
+    <div class="results-container">
+      <h1>実験結果</h1>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">平均移動時間</div>
+          <div class="stat-value" id="stat-avg-mt">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">エラー率</div>
+          <div class="stat-value" id="stat-error-rate">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">R² (決定係数)</div>
+          <div class="stat-value" id="stat-r2">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">回帰式</div>
+          <div class="stat-value stat-value-sm" id="stat-equation">—</div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="chart-fitts"></canvas>
+      </div>
+
+      <div class="condition-table-wrapper">
+        <h2>条件別データ</h2>
+        <table id="condition-table">
+          <thead>
+            <tr>
+              <th>D (px)</th>
+              <th>W (px)</th>
+              <th>ID (bits)</th>
+              <th>平均MT (ms)</th>
+              <th>SD (ms)</th>
+              <th>エラー率</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="results-actions">
+        <button id="btn-csv" class="btn-secondary">CSVダウンロード</button>
+        <button id="btn-retry" class="btn-primary">もう一度</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="experiment.js"></script>
+  <script src="analysis.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
